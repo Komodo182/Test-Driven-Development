@@ -1,4 +1,5 @@
 ﻿using MySqlConnector;
+using System;
 
 namespace Test_Driven_Development
 {
@@ -121,18 +122,22 @@ namespace Test_Driven_Development
         }
         public static void GetCategoryOfProduct(int productID)
         {
+            string categoryName = "Category for product with ID 0 not found";
             using var connection = new MySqlConnection(connStr);
             connection.Open();
-            using var command = new MySqlCommand("SELECT categoryName FROM products, categories WHERE productID = @productID", connection);
+            using var command = new MySqlCommand("SELECT categoryName FROM products, categories WHERE productID = @productID " +
+                "AND products.categoryID = categories.categoryID;", connection);
             command.Parameters.AddWithValue("@productID", productID);
             using var reader = command.ExecuteReader();
             if (reader.Read())
             {
-                Console.WriteLine(reader.GetString(0));
+                categoryName = reader.GetString(0);
             }
+            Console.WriteLine(categoryName);
         }
         public static void GetSupplierOfProduct(int productID)
         {
+            string supplierName = "Supplier for product with ID 0 not found";
             using var connection = new MySqlConnection(connStr);
             connection.Open();
             using var command = new MySqlCommand("SELECT supplierName FROM products, suppliers WHERE productID = @productID " +
@@ -141,8 +146,9 @@ namespace Test_Driven_Development
             using var reader = command.ExecuteReader();
             if (reader.Read())
             {
-                Console.WriteLine(reader.GetString(0));
+                supplierName = reader.GetString(0);
             }
+            Console.WriteLine(supplierName);
         }
         public static void CustomerMenu()
         {
@@ -202,20 +208,22 @@ namespace Test_Driven_Development
             if (reader.Read())
             {
                 contactName = reader.GetString(0);
+                string[] splitName = contactName.Split(" ");
+                contactName = $"{splitName[0][0]}.{splitName[1][0]}.";
             }
             Console.WriteLine(contactName);
         }
         public static void GetFullCustomerAddress(int customerID)
         {
-            string FullCustomerAddress = "not found";
+            string FullCustomerAddress = "Address for customer with ID 0 not found";
             using var connection = new MySqlConnection(connStr);
             connection.Open();
-            using var command = new MySqlCommand("SELECT Address, City FROM customers WHERE customerID = @customerID;", connection);
+            using var command = new MySqlCommand("SELECT Address, City, PostalCode, Country FROM customers WHERE customerID = @customerID;", connection);
             command.Parameters.AddWithValue("@customerID", customerID);
             using var reader = command.ExecuteReader();
             if (reader.Read())
             {
-                FullCustomerAddress = $"{reader.GetString(0)}, {reader.GetString(0)}";
+                FullCustomerAddress = $"{reader.GetString(0)}, {reader.GetString(1)}, {reader.GetString(2)}, {reader.GetString(3)}";
             }
             Console.WriteLine(FullCustomerAddress);
         }
